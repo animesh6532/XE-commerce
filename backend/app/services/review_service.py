@@ -27,7 +27,6 @@ class ReviewService:
             self,
             db: Session,
             user_id: int,
-<<<<<<< HEAD
             product_id: int = None,
             rating: float = None,
             comment: str = None,
@@ -39,14 +38,6 @@ class ReviewService:
             product_id = review.product_id
             rating = review.rating
             comment = review.comment
-=======
-            product_id: int,
-            rating: float,
-            comment: str,
-            sentiment: str = "neutral",
-            is_fake: bool = False
-    ):
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
         product = db.query(Product).filter(
             Product.id == product_id
@@ -59,11 +50,7 @@ class ReviewService:
                 "message": "Product not found"
             }
 
-<<<<<<< HEAD
         review_obj = Review(
-=======
-        review = Review(
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
             user_id=user_id,
             product_id=product_id,
             rating=rating,
@@ -72,15 +59,9 @@ class ReviewService:
             is_fake=is_fake
         )
 
-<<<<<<< HEAD
         db.add(review_obj)
         db.commit()
         db.refresh(review_obj)
-=======
-        db.add(review)
-        db.commit()
-        db.refresh(review)
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
         self.update_product_rating(
             db,
@@ -91,11 +72,7 @@ class ReviewService:
             f"Review added by user {user_id}"
         )
 
-<<<<<<< HEAD
         return review_obj
-=======
-        return review
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
     # ==========================================
     # Update Review
@@ -105,7 +82,6 @@ class ReviewService:
             db: Session,
             review_id: int,
             rating: float = None,
-<<<<<<< HEAD
             comment: str = None,
             user_id: int = None,
             review = None
@@ -119,16 +95,6 @@ class ReviewService:
         ).first()
 
         if not db_review:
-=======
-            comment: str = None
-    ):
-
-        review = db.query(Review).filter(
-            Review.id == review_id
-        ).first()
-
-        if not review:
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
             return {
                 "success": False,
@@ -136,27 +102,16 @@ class ReviewService:
             }
 
         if rating is not None:
-<<<<<<< HEAD
             db_review.rating = rating
 
         if comment is not None:
             db_review.comment = comment
-=======
-            review.rating = rating
-
-        if comment is not None:
-            review.comment = comment
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
         db.commit()
 
         self.update_product_rating(
             db,
-<<<<<<< HEAD
             db_review.product_id
-=======
-            review.product_id
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         )
 
         return {
@@ -170,7 +125,6 @@ class ReviewService:
     def delete_review(
             self,
             db: Session,
-<<<<<<< HEAD
             review_id: int,
             user_id: int = None
     ):
@@ -180,31 +134,15 @@ class ReviewService:
         ).first()
 
         if not db_review:
-=======
-            review_id: int
-    ):
-
-        review = db.query(Review).filter(
-            Review.id == review_id
-        ).first()
-
-        if not review:
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
             return {
                 "success": False,
                 "message": "Review not found"
             }
 
-<<<<<<< HEAD
         product_id = db_review.product_id
 
         db.delete(db_review)
-=======
-        product_id = review.product_id
-
-        db.delete(review)
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         db.commit()
 
         self.update_product_rating(
@@ -217,10 +155,6 @@ class ReviewService:
             "message": "Review deleted"
         }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     # ==========================================
     # Get Product Reviews
     # ==========================================
@@ -292,12 +226,8 @@ class ReviewService:
     def like_review(
             self,
             db: Session,
-<<<<<<< HEAD
             review_id: int,
             user_id: int = None
-=======
-            review_id: int
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     ):
 
         review = db.query(Review).filter(
@@ -325,12 +255,8 @@ class ReviewService:
     def dislike_review(
             self,
             db: Session,
-<<<<<<< HEAD
             review_id: int,
             user_id: int = None
-=======
-            review_id: int
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     ):
 
         review = db.query(Review).filter(
@@ -352,10 +278,6 @@ class ReviewService:
             "dislikes": review.dislikes
         }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     # ==========================================
     # Fake Reviews
     # ==========================================
@@ -429,7 +351,6 @@ class ReviewService:
         }
 
     # ==========================================
-<<<<<<< HEAD
     # Get Review By ID (with 404 validation)
     # ==========================================
     def get_review_by_id(self, db: Session, review_id: int):
@@ -538,8 +459,6 @@ class ReviewService:
         }
 
     # ==========================================
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     # Health Check
     # ==========================================
     def health(self):

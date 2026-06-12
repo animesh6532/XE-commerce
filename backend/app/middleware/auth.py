@@ -1,9 +1,5 @@
 from fastapi import Depends, HTTPException, status
-<<<<<<< HEAD
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-=======
-from fastapi.security import OAuth2PasswordBearer
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 from jose import JWTError
 from sqlalchemy.orm import Session
 
@@ -11,26 +7,15 @@ from app.database.connection import get_db
 from app.database.models import User
 from app.utils.jwt_handler import verify_access_token
 
-<<<<<<< HEAD
 # HTTP Bearer Security Scheme
 security_scheme = HTTPBearer()
-=======
-# Login endpoint
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/auth/login"
-)
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
 
 # ==========================================================
 # Get Current User
 # ==========================================================
 def get_current_user(
-<<<<<<< HEAD
         credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
-=======
-        token: str = Depends(oauth2_scheme),
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         db: Session = Depends(get_db)
 ):
 
@@ -42,10 +27,7 @@ def get_current_user(
 
     try:
 
-<<<<<<< HEAD
         token = credentials.credentials
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         payload = verify_access_token(token)
 
         user_id = payload.get("user_id")

@@ -10,7 +10,7 @@ class ImageEncoder:
     def __init__(self):
 
         self.model = models.resnet50(
-            pretrained=True
+            weights=models.ResNet50_Weights.DEFAULT
         )
 
         self.model.eval()

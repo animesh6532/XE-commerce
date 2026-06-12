@@ -24,14 +24,16 @@ from app.api import (
     user_activity
 )
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
     title="Xecommerce AI Platform",
     description="AI Powered E-Commerce Platform API",
     version="1.0.0"
 )
+
+# Create tables during FastAPI startup event
+@app.on_event("startup")
+def startup_event():
+    Base.metadata.create_all(bind=engine)
 
 # CORS
 origins = [

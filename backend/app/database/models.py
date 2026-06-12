@@ -80,8 +80,8 @@ class Cart(Base):
 
     id = Column(Integer, primary_key=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
-    product_id = Column(Integer, ForeignKey("products.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), index=True)
 
     quantity = Column(Integer, default=1)
 
@@ -99,7 +99,7 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
 
     total_amount = Column(Float)
 
@@ -127,7 +127,7 @@ class Review(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    product_id = Column(Integer, ForeignKey("products.id"))
+    product_id = Column(Integer, ForeignKey("products.id"), index=True)
 
     rating = Column(Float)
 
@@ -155,7 +155,7 @@ class Wishlist(Base):
 
     id = Column(Integer, primary_key=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
 
     product_id = Column(Integer, ForeignKey("products.id"))
 

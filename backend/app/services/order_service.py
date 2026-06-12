@@ -32,7 +32,6 @@ class OrderService:
             self,
             db: Session,
             user_id: int,
-<<<<<<< HEAD
             shipping_address: str = None,
             payment_method: str = None,
             order_data = None
@@ -40,12 +39,6 @@ class OrderService:
         if order_data is not None:
             shipping_address = order_data.shipping_address
             payment_method = order_data.payment_method
-
-=======
-            shipping_address: str,
-            payment_method: str
-    ):
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
         cart_items = db.query(Cart).filter(
             Cart.user_id == user_id
@@ -175,12 +168,8 @@ class OrderService:
     def cancel_order(
             self,
             db: Session,
-<<<<<<< HEAD
             order_id: int,
             user_id: int = None
-=======
-            order_id: int
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     ):
 
         order = db.query(Order).filter(
@@ -240,17 +229,11 @@ class OrderService:
             self,
             db: Session,
             order_id: int,
-<<<<<<< HEAD
             reason: str,
             user_id: int = None
     ):
 
 
-=======
-            reason: str
-    ):
-
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         order = db.query(Order).filter(
             Order.id == order_id
         ).first()
@@ -361,7 +344,6 @@ class OrderService:
         )
 
     # =================================================
-<<<<<<< HEAD
     # Get Order By ID (checks user ownership and raises 404/403)
     # =================================================
     def get_order_by_id(self, db: Session, user_id: int, order_id: int):
@@ -413,8 +395,6 @@ class OrderService:
         return db.query(Order).all()
 
     # =================================================
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     # Health Check
     # =================================================
     def health(self):

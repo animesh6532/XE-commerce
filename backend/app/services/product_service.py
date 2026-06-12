@@ -23,7 +23,6 @@ class ProductService:
     def create_product(
             self,
             db: Session,
-<<<<<<< HEAD
             product_data = None,
             product = None,
             user = None
@@ -48,30 +47,6 @@ class ProductService:
         )
 
         return db_product
-=======
-            product_data
-    ):
-
-        product = Product(
-            name=product_data.name,
-            description=product_data.description,
-            category=product_data.category,
-            brand=product_data.brand,
-            price=product_data.price,
-            stock=product_data.stock,
-            image_url=product_data.image_url
-        )
-
-        db.add(product)
-        db.commit()
-        db.refresh(product)
-
-        app_logger.info(
-            f"Product created: {product.name}"
-        )
-
-        return product
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
     # ==========================================
     # Get Product By ID
@@ -103,7 +78,6 @@ class ProductService:
             self,
             db: Session,
             product_id: int,
-<<<<<<< HEAD
             data = None,
             product = None,
             user = None
@@ -114,23 +88,12 @@ class ProductService:
         ).first()
 
         if not db_product:
-=======
-            data
-    ):
-
-        product = db.query(Product).filter(
-            Product.id == product_id
-        ).first()
-
-        if not product:
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
             return {
                 "success": False,
                 "message": "Product not found"
             }
 
-<<<<<<< HEAD
         for key, value in update_data.dict(
                 exclude_unset=True
         ).items():
@@ -145,22 +108,6 @@ class ProductService:
         )
 
         return db_product
-=======
-        for key, value in data.dict(
-                exclude_unset=True
-        ).items():
-
-            setattr(product, key, value)
-
-        db.commit()
-        db.refresh(product)
-
-        app_logger.info(
-            f"Product updated: {product.id}"
-        )
-
-        return product
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
     # ==========================================
     # Delete Product
@@ -168,7 +115,6 @@ class ProductService:
     def delete_product(
             self,
             db: Session,
-<<<<<<< HEAD
             product_id: int,
             user = None
     ):
@@ -178,27 +124,13 @@ class ProductService:
         ).first()
 
         if not db_product:
-=======
-            product_id: int
-    ):
-
-        product = db.query(Product).filter(
-            Product.id == product_id
-        ).first()
-
-        if not product:
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
             return {
                 "success": False,
                 "message": "Product not found"
             }
 
-<<<<<<< HEAD
         db.delete(db_product)
-=======
-        db.delete(product)
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         db.commit()
 
         app_logger.info(
@@ -216,7 +148,6 @@ class ProductService:
     def search_products(
             self,
             db: Session,
-<<<<<<< HEAD
             keyword: str = None,
             query: str = None
     ):
@@ -227,17 +158,6 @@ class ProductService:
                 Product.name.ilike(f"%{term}%"),
                 Product.brand.ilike(f"%{term}%"),
                 Product.category.ilike(f"%{term}%")
-=======
-            keyword: str
-    ):
-
-        return db.query(Product).filter(
-
-            or_(
-                Product.name.ilike(f"%{keyword}%"),
-                Product.brand.ilike(f"%{keyword}%"),
-                Product.category.ilike(f"%{keyword}%")
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
             )
 
         ).all()
@@ -262,7 +182,7 @@ class ProductService:
             self,
             db: Session,
             brand: str
-    ):
+        ):
 
         return db.query(Product).filter(
             Product.brand == brand
@@ -407,7 +327,6 @@ class ProductService:
         ).all()
 
     # ==========================================
-<<<<<<< HEAD
     # Get Products (Paginated)
     # ==========================================
     def get_products(self, db: Session, page: int = 1, limit: int = 20):
@@ -496,8 +415,6 @@ class ProductService:
         }
 
     # ==========================================
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     # Health Check
     # ==========================================
     def health(self):

@@ -6,11 +6,16 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///xecommerce.db")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///xecommerce.db"
+)
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+    connect_args={"check_same_thread": False}
+    if DATABASE_URL.startswith("sqlite")
+    else {}
 )
 
 SessionLocal = sessionmaker(
@@ -20,6 +25,7 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()
@@ -27,21 +33,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-<<<<<<< HEAD
-=======
-DATABASE_URL = "sqlite:///xecommerce.db"
-
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}
-)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
-
-Base = declarative_base()
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a

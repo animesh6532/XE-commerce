@@ -25,16 +25,10 @@ class RecommendationService:
             self,
             db: Session,
             user_id: int,
-<<<<<<< HEAD
             limit: int = 10,
             top_k: int = None
     ):
         limit = top_k or limit
-=======
-            limit: int = 10
-    ):
-
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         activities = db.query(
             UserActivity
         ).filter(
@@ -88,16 +82,10 @@ class RecommendationService:
             self,
             db: Session,
             product_id: int,
-<<<<<<< HEAD
             limit: int = 5,
             top_k: int = None
     ):
         limit = top_k or limit
-=======
-            limit: int = 5
-    ):
-
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
         product = db.query(Product).filter(
             Product.id == product_id
         ).first()
@@ -115,7 +103,6 @@ class RecommendationService:
     # =================================================
     def category_recommendations(
             self,
-<<<<<<< HEAD
             category: str,
             db: Session = None,
             limit: int = 10,
@@ -136,25 +123,12 @@ class RecommendationService:
         finally:
             if close_session:
                 db.close()
-=======
-            db: Session,
-            category: str,
-            limit: int = 10
-    ):
-
-        return db.query(Product).filter(
-            Product.category == category
-        ).order_by(
-            desc(Product.rating)
-        ).limit(limit).all()
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
     # =================================================
     # Budget Recommendations
     # =================================================
     def budget_recommendations(
             self,
-<<<<<<< HEAD
             category: str,
             budget: float,
             db: Session = None,
@@ -177,21 +151,6 @@ class RecommendationService:
         finally:
             if close_session:
                 db.close()
-
-=======
-            db: Session,
-            category: str,
-            budget: float,
-            limit: int = 10
-    ):
-
-        return db.query(Product).filter(
-            Product.category == category,
-            Product.price <= budget
-        ).order_by(
-            desc(Product.rating)
-        ).limit(limit).all()
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
     # =================================================
     # Top Rated Products
@@ -350,7 +309,6 @@ class RecommendationService:
         }
 
     # =================================================
-<<<<<<< HEAD
     # Content-Based Filtering Recommendations
     # =================================================
     def content_based(self, user_id: int, top_k: int = 10):
@@ -528,8 +486,6 @@ class RecommendationService:
             db.close()
 
     # =================================================
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     # Health Check
     # =================================================
     def health(self):

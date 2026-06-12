@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database.models import Cart, Product, Wishlist
 from app.monitoring.logs import app_logger
 
@@ -12,7 +12,6 @@ class CartService:
             self,
             db: Session,
             user_id: int,
-<<<<<<< HEAD
             product_id: int = None,
             quantity: int = 1,
             cart_data = None
@@ -20,12 +19,6 @@ class CartService:
         if cart_data is not None:
             product_id = cart_data.product_id
             quantity = cart_data.quantity
-
-=======
-            product_id: int,
-            quantity: int = 1
-    ):
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
         product = db.query(Product).filter(
             Product.id == product_id
@@ -65,7 +58,7 @@ class CartService:
         }
 
     # ============================================
-    # View Cart
+    # View Cart (Optimized using joinedload to prevent N+1 queries)
     # ============================================
     def get_cart(
             self,
@@ -73,7 +66,9 @@ class CartService:
             user_id: int
     ):
 
-        cart_items = db.query(Cart).filter(
+        cart_items = db.query(Cart).options(
+            joinedload(Cart.product)
+        ).filter(
             Cart.user_id == user_id
         ).all()
 
@@ -83,21 +78,19 @@ class CartService:
 
         for item in cart_items:
 
-            product = db.query(Product).filter(
-                Product.id == item.product_id
-            ).first()
+            product = item.product
+            if product:
+                subtotal = product.price * item.quantity
 
-            subtotal = product.price * item.quantity
+                total += subtotal
 
-            total += subtotal
-
-            items.append({
-                "product_id": product.id,
-                "name": product.name,
-                "price": product.price,
-                "quantity": item.quantity,
-                "subtotal": subtotal
-            })
+                items.append({
+                    "product_id": product.id,
+                    "name": product.name,
+                    "price": product.price,
+                    "quantity": item.quantity,
+                    "subtotal": subtotal
+                })
 
         return {
             "items": items,
@@ -212,7 +205,6 @@ class CartService:
     # ============================================
     def apply_coupon(
             self,
-<<<<<<< HEAD
             db: Session,
             user_id: int,
             coupon_code: str,
@@ -221,11 +213,6 @@ class CartService:
         if total_price is None:
             cart = self.get_cart(db, user_id)
             total_price = cart.get("total_price", 0.0)
-=======
-            total_price: float,
-            coupon_code: str
-    ):
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 
         discounts = {
             "SAVE10": 10,
@@ -258,7 +245,6 @@ class CartService:
         }
 
     # ============================================
-<<<<<<< HEAD
     # Remove from Cart (Alias/Wrapper)
     # ============================================
     def remove_from_cart(self, db: Session, user_id: int, product_id: int):
@@ -305,10 +291,7 @@ class CartService:
             "total": total
         }
 
-
     # ============================================
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
     # Wishlist To Cart
     # ============================================
     def wishlist_to_cart(

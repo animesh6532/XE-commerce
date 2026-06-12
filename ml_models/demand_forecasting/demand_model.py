@@ -15,17 +15,21 @@ class DemandForecastModel:
 
 
     def predict(self, days_ahead=7):
+        import datetime
+        start_date = datetime.date.today()
+        future_rows = []
 
-        future_days = pd.DataFrame(
-            {
-                "day_number": range(days_ahead)
-            }
-        )
+        for i in range(days_ahead):
+            future_date = start_date + datetime.timedelta(days=i)
+            future_rows.append({
+                "day_number": 1000 + i, # dummy index corresponding to future
+                "day_of_week": future_date.weekday(),
+                "month": future_date.month,
+                "week_of_year": int(future_date.isocalendar()[1])
+            })
 
-        predictions = self.model.predict(
-            future_days
-        )
-
+        future_df = pd.DataFrame(future_rows)
+        predictions = self.model.predict(future_df)
         return predictions
 
 

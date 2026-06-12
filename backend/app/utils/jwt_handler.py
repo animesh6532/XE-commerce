@@ -14,26 +14,21 @@ from fastapi import HTTPException, status
 # JWT CONFIGURATION
 # ====================================================
 
-<<<<<<< HEAD
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY") or "your_super_secret_key"
-=======
-SECRET_KEY = "your_super_secret_key"
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
+SECRET_KEY = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("JWT_SECRET or SECRET_KEY environment variable is missing!")
 
 ALGORITHM = "HS256"
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 # ====================================================
 # CREATE ACCESS TOKEN
 # ====================================================
@@ -96,13 +91,7 @@ def verify_token(
         )
 
 
-<<<<<<< HEAD
 verify_access_token = verify_token
-
-
-
-=======
->>>>>>> 26211b0cb847c49c214e53509294b37fff238a9a
 # ====================================================
 # GET CURRENT USER ID
 # ====================================================
