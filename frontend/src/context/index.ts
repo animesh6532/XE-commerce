@@ -1,1 +1,2 @@
-export const AppContext = {};
+export * from './AuthContext';
+

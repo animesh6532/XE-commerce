@@ -1,1 +1,15 @@
-export const routes = [];
+export const ROUTES = {
+  HOME: '/',
+  PRODUCTS: '/products',
+  PRODUCT_DETAILS: '/product/:id',
+  CART: '/cart',
+  CHECKOUT: '/checkout',
+  WISHLIST: '/wishlist',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  DASHBOARD: '/dashboard',
+  ANALYTICS: '/analytics',
+  ADMIN: '/admin',
+  CHATBOT: '/chatbot',
+  ORDERS: '/orders',
+};

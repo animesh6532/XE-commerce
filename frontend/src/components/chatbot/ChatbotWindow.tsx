@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   chatbotService, 
-  Product, 
+  ChatbotProduct, 
   ComparisonResponse, 
   HistoryItem 
 } from '../../services/chatbot';
@@ -10,7 +10,7 @@ interface Message {
   id: string;
   sender: 'user' | 'assistant';
   text: string;
-  products?: Product[];
+  products?: ChatbotProduct[];
   comparison?: ComparisonResponse;
   source?: string;
   routedDataset?: string;
