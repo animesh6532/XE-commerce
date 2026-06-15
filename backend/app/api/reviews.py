@@ -14,6 +14,16 @@ router = APIRouter()
 review_service = ReviewService()
 
 
+# ---------------- Health Check ----------------
+@router.get("/health")
+def health_check():
+
+    return {
+        "status": "healthy",
+        "service": "reviews"
+    }
+
+
 # ---------------- Add Review ----------------
 @router.post("/")
 def add_review(
@@ -188,12 +198,4 @@ def verify_purchase(
         product_id=product_id
     )
 
-
-# ---------------- Health Check ----------------
-@router.get("/health")
-def health_check():
-
-    return {
-        "status": "healthy",
-        "service": "reviews"
-    }
+

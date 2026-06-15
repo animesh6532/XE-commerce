@@ -21,15 +21,20 @@ class SearchService:
 
     def keyword_search(self, db: Session, query: str, page: int = 1, limit: int = 20):
         offset = (page - 1) * limit
-        results = db.query(Product).filter(
-            or_(
-                Product.name.ilike(f"%{query}%"),
-                Product.brand.ilike(f"%{query}%"),
-                Product.category.ilike(f"%{query}%"),
-                Product.description.ilike(f"%{query}%")
-            )
-        ).offset(offset).limit(limit).all()
-        return results
+        filter_cond = or_(
+            Product.name.ilike(f"%{query}%"),
+            Product.brand.ilike(f"%{query}%"),
+            Product.category.ilike(f"%{query}%"),
+            Product.description.ilike(f"%{query}%")
+        )
+        total = db.query(Product).filter(filter_cond).count()
+        results = db.query(Product).filter(filter_cond).offset(offset).limit(limit).all()
+        return {
+            "results": results,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
 
     def semantic_search(self, query: str, top_k: int = 10):
         # SemanticSearch.search returns list of dicts from the products.csv
@@ -133,8 +138,46 @@ class SearchService:
             db.close()
 
     def ai_search(self, query: str, top_k: int = 10):
-        # AI search is wrapper for semantic search
-        return self.semantic_search(query, top_k)
+        try:
+            from ml_models.chatbot.rag_pipeline import RAGPipeline
+        except ImportError:
+            try:
+                from chatbot.rag_pipeline import RAGPipeline
+            except ImportError:
+                import sys
+                CHATBOT_DIR = PROJECT_ROOT / "ml_models" / "chatbot"
+                if str(CHATBOT_DIR) not in sys.path:
+                    sys.path.append(str(CHATBOT_DIR))
+                from rag_pipeline import RAGPipeline
+
+        try:
+            pipeline = RAGPipeline()
+            rag_res = pipeline.query(query, top_k=top_k)
+            raw_recs = rag_res.get("products", [])
+        except Exception:
+            raw_recs = []
+
+        from app.database.connection import SessionLocal
+        db = SessionLocal()
+        try:
+            names = []
+            for item in raw_recs:
+                if "product_name" in item:
+                    names.append(item["product_name"])
+                elif "name" in item:
+                    names.append(item["name"])
+            
+            if names:
+                db_products = db.query(Product).filter(Product.name.in_(names)).all()
+                prod_map = {p.name: p for p in db_products}
+                ordered = [prod_map[name] for name in names if name in prod_map]
+                if ordered:
+                    return ordered
+            
+            # Fallback to semantic search
+            return self.semantic_search(query, top_k)
+        finally:
+            db.close()
 
     def similar_products(self, product_id: int):
         from app.database.connection import SessionLocal

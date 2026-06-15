@@ -331,7 +331,14 @@ class ProductService:
     # ==========================================
     def get_products(self, db: Session, page: int = 1, limit: int = 20):
         offset = (page - 1) * limit
-        return db.query(Product).offset(offset).limit(limit).all()
+        total = db.query(Product).count()
+        products = db.query(Product).offset(offset).limit(limit).all()
+        return {
+            "products": products,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
 
     # ==========================================
     # Get Product By ID (with 404 validation)

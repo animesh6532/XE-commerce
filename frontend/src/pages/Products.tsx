@@ -75,7 +75,7 @@ const Products: React.FC = () => {
   }, [categoryParam]);
 
   // Main Products Query using react-query
-  const { data: products = [], isLoading: productsLoading, refetch } = useQuery({
+  const { data: productsResult, isLoading: productsLoading, refetch } = useQuery({
     queryKey: ['products', page, selectedCategory, minPrice, maxPrice, minRating, selectedBrand, queryParam, searchMode],
     queryFn: async () => {
       // Log search activity to backend if user is authenticated and query exists
@@ -86,35 +86,68 @@ const Products: React.FC = () => {
       // If we have a query, use the search services
       if (queryParam) {
         if (searchMode === 'semantic') {
-          return await searchService.semanticSearch(queryParam);
+          const res = await searchService.semanticSearch(queryParam);
+          const items = Array.isArray(res) ? res : [];
+          return { products: items, total: items.length };
         } else if (searchMode === 'ai') {
-          return await searchService.aiSearch(queryParam);
+          const res = await searchService.aiSearch(queryParam);
+          const items = Array.isArray(res) ? res : [];
+          return { products: items, total: items.length };
         } else {
           const res = await searchService.keywordSearch(queryParam, page, limit);
-          return res.results;
+          const items = Array.isArray(res?.results) ? res.results : [];
+          const total = typeof res?.total === 'number' ? res.total : items.length;
+          return { products: items, total };
         }
       }
 
       // If we have filters but no query
       if (selectedCategory || minPrice || maxPrice || minRating || selectedBrand) {
-        return await productService.filterProducts({
+        const res = await productService.filterProducts({
           category: selectedCategory || undefined,
           min_price: minPrice ? parseFloat(minPrice) : undefined,
           max_price: maxPrice ? parseFloat(maxPrice) : undefined,
           min_rating: minRating ? parseFloat(minRating) : undefined,
           brand: selectedBrand || undefined
         });
+        const items = Array.isArray(res) ? res : [];
+        return { products: items, total: items.length };
       }
 
       // Default catalog paginated
-      return await productService.getProducts(page, limit);
+      const res = await productService.getProducts(page, limit);
+      const items = Array.isArray(res?.products) ? res.products : [];
+      const total = typeof res?.total === 'number' ? res.total : items.length;
+      return { products: items, total };
     }
   });
+
+  const products = productsResult && Array.isArray(productsResult.products) ? productsResult.products : [];
+  const totalItems = productsResult && typeof productsResult.total === 'number' ? productsResult.total : 0;
+  const totalPages = Math.ceil(totalItems / limit);
 
   // Reset page on filter changes
   useEffect(() => {
     setPage(1);
   }, [selectedCategory, minPrice, maxPrice, minRating, selectedBrand, queryParam]);
+
+  // Debounce search query input to update URL params
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      // Only update if search query changed from URL param
+      if (searchQuery !== queryParam) {
+        setSearchParams((prev) => {
+          if (searchQuery) prev.set('q', searchQuery);
+          else prev.delete('q');
+          return prev;
+        });
+      }
+    }, 450);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery, queryParam, setSearchParams]);
 
   // Handle Search Input submissions
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -443,7 +476,15 @@ const Products: React.FC = () => {
               <div>
                 <div className="aspect-square bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center overflow-hidden relative mb-4">
                   {prod.image_url ? (
-                    <img src={prod.image_url} alt={prod.name} className="object-cover h-full w-full group-hover:scale-105 transition-transform" />
+                    <img 
+                      src={prod.image_url} 
+                      alt={prod.name} 
+                      className="object-cover h-full w-full group-hover:scale-105 transition-transform" 
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+                      }}
+                    />
                   ) : (
                     <Cpu className="h-12 w-12 text-slate-300" />
                   )}
@@ -477,7 +518,7 @@ const Products: React.FC = () => {
       )}
 
       {/* Pagination controls */}
-      {!queryParam && activeProductsList.length >= limit && (
+      {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 pt-6">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -486,10 +527,10 @@ const Products: React.FC = () => {
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <span className="text-sm font-semibold text-slate-600">Page {page}</span>
+          <span className="text-sm font-semibold text-slate-600">Page {page} of {totalPages}</span>
           <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={activeProductsList.length < limit}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
             className="p-2 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-50 transition-all cursor-pointer"
           >
             <ChevronRight className="h-5 w-5" />

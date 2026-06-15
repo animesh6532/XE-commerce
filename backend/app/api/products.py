@@ -13,6 +13,15 @@ router = APIRouter()
 product_service = ProductService()
 
 
+# ---------------- Health Check ----------------
+@router.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "products"
+    }
+
+
 # ---------------- Get All Products ----------------
 @router.get("/")
 def get_products(
@@ -178,11 +187,4 @@ def inventory_status(
 ):
     return product_service.inventory_status(db)
 
-
-# ---------------- Health Check ----------------
-@router.get("/health")
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "products"
-    }
+

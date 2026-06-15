@@ -48,9 +48,16 @@ export interface InventoryStatus {
   }>;
 }
 
+export interface PaginatedProductResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export const productService = {
-  async getProducts(page = 1, limit = 20): Promise<Product[]> {
-    const res = await api.get<Product[]>('/api/products/', {
+  async getProducts(page = 1, limit = 20): Promise<PaginatedProductResponse> {
+    const res = await api.get<PaginatedProductResponse>('/api/products/', {
       params: { page, limit }
     });
     return res.data;

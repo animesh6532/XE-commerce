@@ -414,21 +414,42 @@ class ReviewService:
                 return {
                     "total_reviews": 0,
                     "average_rating": 0.0,
-                    "sentiment_distribution": {"positive": 0, "negative": 0, "neutral": 0}
+                    "rating_distribution": {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+                    "sentiment_summary": {"positive": 0, "negative": 0, "neutral": 0},
+                    "sentiment_distribution": {"positive": 0, "negative": 0, "neutral": 0},
+                    "fake_review_percentage": 0.0
                 }
             ratings = [r.rating for r in reviews if r.rating is not None]
             avg_rating = sum(ratings) / len(ratings) if ratings else 0.0
-            pos = len([r for r in reviews if r.sentiment == "positive"])
-            neg = len([r for r in reviews if r.sentiment == "negative"])
-            neu = len([r for r in reviews if r.sentiment not in ["positive", "negative"]])
+            
+            rating_dist = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+            for r in ratings:
+                star = int(round(r))
+                if star in rating_dist:
+                    rating_dist[star] += 1
+                    
+            pos = len([r for r in reviews if str(r.sentiment).lower() == "positive"])
+            neg = len([r for r in reviews if str(r.sentiment).lower() == "negative"])
+            neu = len([r for r in reviews if str(r.sentiment).lower() not in ["positive", "negative"]])
+            
+            fake_count = len([r for r in reviews if r.is_fake])
+            fake_percentage = (fake_count / len(reviews)) * 100.0 if reviews else 0.0
+            
             return {
                 "total_reviews": len(reviews),
                 "average_rating": round(avg_rating, 2),
+                "rating_distribution": rating_dist,
+                "sentiment_summary": {
+                    "positive": pos,
+                    "negative": neg,
+                    "neutral": neu
+                },
                 "sentiment_distribution": {
                     "positive": pos,
                     "negative": neg,
                     "neutral": neu
-                }
+                },
+                "fake_review_percentage": round(fake_percentage, 2)
             }
         finally:
             db.close()

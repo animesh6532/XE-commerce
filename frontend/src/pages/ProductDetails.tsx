@@ -65,11 +65,31 @@ const ProductDetails: React.FC = () => {
     enabled: !!productId
   });
 
-  const { data: reviews = [], isLoading: reviewsLoading } = useQuery({
+  const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
     queryKey: ['reviews', productId],
     queryFn: () => reviewService.getProductReviews(productId),
     enabled: !!productId
   });
+
+  const reviews = Array.isArray(reviewsData) ? reviewsData : [];
+
+  const { data: similarProductsData } = useQuery({
+    queryKey: ['similarProducts', productId],
+    queryFn: () => productService.getSimilarProducts(productId),
+    enabled: !!productId,
+    retry: false
+  });
+
+  const similarProducts = Array.isArray(similarProductsData) ? similarProductsData : [];
+
+  const { data: recommendationsData } = useQuery({
+    queryKey: ['recommendations', productId],
+    queryFn: () => recommendationService.getPersonalized(5),
+    enabled: !!productId,
+    retry: false
+  });
+
+  const recommendations = Array.isArray(recommendationsData) ? recommendationsData : [];
 
   const { data: reviewSummary } = useQuery({
     queryKey: ['reviewSummary', productId],
@@ -185,7 +205,15 @@ const ProductDetails: React.FC = () => {
         {/* Product Image */}
         <div className="aspect-square bg-white border border-slate-100 rounded-3xl p-8 flex items-center justify-center overflow-hidden shadow-sm relative">
           {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="object-contain max-h-[400px] w-full" />
+            <img 
+              src={product.image_url} 
+              alt={product.name} 
+              className="object-contain max-h-[400px] w-full" 
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+              }}
+            />
           ) : (
             <Cpu className="h-24 w-24 text-slate-200 animate-pulse" />
           )}
@@ -499,6 +527,123 @@ const ProductDetails: React.FC = () => {
             <div className="text-center py-12 bg-white border border-slate-100 rounded-3xl">
               <MessageSquare className="h-8 w-8 text-slate-200 mx-auto mb-2" />
               <p className="text-xs font-semibold text-slate-400">No reviews has been written for this product yet.</p>
+            </div>
+          )}
+        </div>
+
+      </section>
+
+      {/* Similar Products & Related Recommendations */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
+        
+        {/* Similar Products */}
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+              <Cpu className="h-5 w-5 text-blue-600" />
+              Similar Products
+            </h3>
+            <p className="text-xs text-slate-400">Products from the same category</p>
+          </div>
+          
+          {similarProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {similarProducts.map((prod) => (
+                <div
+                  key={prod.id}
+                  onClick={() => navigate(`/product/${prod.id}`)}
+                  className="group p-4 rounded-2xl border border-slate-100 bg-white hover:shadow-md transition-all cursor-pointer flex gap-4"
+                >
+                  <div className="h-16 w-16 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                    {prod.image_url ? (
+                      <img 
+                        src={prod.image_url} 
+                        alt={prod.name} 
+                        className="object-cover h-full w-full group-hover:scale-105 transition-transform" 
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+                        }}
+                      />
+                    ) : (
+                      <Cpu className="h-6 w-6 text-slate-300" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex flex-col justify-between flex-1">
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-sm truncate group-hover:text-blue-600 transition-colors">
+                        {prod.name}
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-bold mt-0.5">{prod.brand}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-extrabold text-slate-800">₹{prod.price.toLocaleString()}</span>
+                      <span className="text-[10px] text-amber-500 font-bold">★ {prod.rating || 4.2}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 rounded-2xl border border-dashed border-slate-200 text-center bg-slate-50/50">
+              <Cpu className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-slate-400">No similar products found.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Related Recommendations */}
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-indigo-600" />
+              People Also Liked
+            </h3>
+            <p className="text-xs text-slate-400">AI-curated recommendations based on popular interest</p>
+          </div>
+          
+          {recommendations.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {recommendations.map((prod) => (
+                <div
+                  key={prod.id}
+                  onClick={() => navigate(`/product/${prod.id}`)}
+                  className="group p-4 rounded-2xl border border-slate-100 bg-white hover:shadow-md transition-all cursor-pointer flex gap-4"
+                >
+                  <div className="h-16 w-16 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                    {prod.image_url ? (
+                      <img 
+                        src={prod.image_url} 
+                        alt={prod.name} 
+                        className="object-cover h-full w-full group-hover:scale-105 transition-transform" 
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
+                        }}
+                      />
+                    ) : (
+                      <Cpu className="h-6 w-6 text-slate-300" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex flex-col justify-between flex-1">
+                    <div>
+                      <h4 className="font-bold text-slate-800 text-sm truncate group-hover:text-blue-600 transition-colors">
+                        {prod.name}
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-bold mt-0.5">{prod.brand}</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-extrabold text-slate-800">₹{prod.price.toLocaleString()}</span>
+                      <span className="text-[10px] text-amber-500 font-bold">★ {prod.rating || 4.2}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 rounded-2xl border border-dashed border-slate-200 text-center bg-slate-50/50">
+              <Sparkles className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-slate-400">No recommended items available.</p>
             </div>
           )}
         </div>
