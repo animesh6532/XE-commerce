@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { cartService } from '../services/cart';
 import { wishlistService } from '../services/wishlist';
 import { searchService } from '../services/search';
+import { FloatingChatbot } from '../components/chatbot';
 import {
   ShoppingBag,
   Heart,
@@ -430,6 +431,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </div>
       </footer>
+      <FloatingChatbot />
     </div>
   );
 };

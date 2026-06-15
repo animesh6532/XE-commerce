@@ -54,8 +54,23 @@ class LLMChatbot:
             query_type = "recommendation"
 
         rag_res = self.pipeline.query(user_query, query_type=query_type)
-        if rag_res["status"] == "error":
-            return rag_res
+        if rag_res.get("status") == "error":
+            logger.warning(f"RAG query returned error: {rag_res.get('message')}. Using graceful fallback.")
+            fallback_text = "I couldn't find exact information, but I can still help you explore products."
+            return {
+                "status": "success",
+                "response": fallback_text,
+                "rag_data": {
+                    "query": user_query,
+                    "routed_dataset": "unknown",
+                    "routing_similarity": 0.0,
+                    "top_5_datasets": [],
+                    "products": [],
+                    "prompt": "",
+                    "status": "success"
+                },
+                "source": "fallback"
+            }
 
         # 2. Check if Ollama is available
         ollama_active = self._check_ollama()

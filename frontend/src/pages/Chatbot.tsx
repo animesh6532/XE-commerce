@@ -1,293 +1,142 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { chatbotService, type ChatbotResponse, type ComparisonResponse, type ChatbotProduct } from '../services/chatbot';
+import React from 'react';
+import { motion } from 'framer-motion';
 import {
   MessageSquareCode,
-  Send,
-  Cpu,
-  RefreshCw,
   Sparkles,
-  Info,
-  Scale,
-  DollarSign,
-  Bookmark,
-  Check,
-  X
+  Volume2,
+  ListFilter,
+  ArrowRight,
+  HelpCircle,
+  Database,
+  RefreshCw
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-interface Message {
-  sender: 'user' | 'assistant';
-  text: string;
-  source?: string;
-  products?: ChatbotProduct[];
-  comparison?: ComparisonResponse['comparison'] & {
-    brand_a: string;
-    brand_b: string;
-    prod_a?: any;
-    prod_b?: any;
-  };
-}
 
 const Chatbot: React.FC = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
+  const triggerOpen = () => {
+    window.dispatchEvent(new CustomEvent('open-aura-chatbot'));
+  };
+
+  const features = [
     {
-      sender: 'assistant',
-      text: 'Hello! I am your XE-Commerce AI Assistant. Ask me to find products within a budget, compare brands (like "compare boat vs jbl"), or find optimal deals.',
+      icon: <Sparkles className="h-6 w-6 text-blue-600" />,
+      title: 'Product-Aware RAG Intelligence',
+      desc: 'Retrieves live database matching products in real-time, matching queries like "Best smartphone under 25000".'
     },
-  ]);
-  
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  // Scroll to bottom
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Load chat history on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const historyRes = await chatbotService.getChatHistory();
-        if (historyRes && historyRes.history && historyRes.history.length > 0) {
-          const historicalMessages: Message[] = [];
-          historyRes.history.forEach((h) => {
-            historicalMessages.push({ sender: 'user', text: h.query });
-            historicalMessages.push({ sender: 'assistant', text: h.response, source: h.source });
-          });
-          setMessages((prev) => [...prev, ...historicalMessages]);
-        }
-      } catch {
-        // Ignore failure loading history
-      }
-    })();
-  }, []);
-
-  // Mutations
-  const queryMutation = useMutation({
-    mutationFn: async (text: string) => {
-      const isComparison = text.toLowerCase().includes('vs') || text.toLowerCase().includes('compare');
-      if (isComparison) {
-        // Call comparison endpoint
-        const res = await chatbotService.compareProducts(text);
-        return { type: 'comparison', data: res } as { type: string; data: any };
-      } else {
-        // Call general RAG query endpoint
-        const res = await chatbotService.queryChatbot(text);
-        return { type: 'query', data: res } as { type: string; data: any };
-      }
+    {
+      icon: <Volume2 className="h-6 w-6 text-purple-600" />,
+      title: 'Text-to-Speech Engine',
+      desc: 'Speech synthesis reads responses aloud. Custom volume sliders, mute preferences, and language selection included.'
     },
-    onSuccess: (res, variables) => {
-      if (res.type === 'comparison') {
-        const compData = res.data as ComparisonResponse;
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: 'assistant',
-            text: compData.comparison.recommendation || `Successfully compared ${compData.brand_a} and ${compData.brand_b}.`,
-            comparison: {
-              brand_a: compData.brand_a,
-              brand_b: compData.brand_b,
-              ...compData.comparison,
-              prod_a: compData.product_a,
-              prod_b: compData.product_b,
-            } as any
-          }
-        ]);
-      } else {
-        const queryData = res.data as ChatbotResponse;
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: 'assistant',
-            text: queryData.response,
-            source: queryData.source,
-            products: queryData.rag_data?.products || []
-          }
-        ]);
-      }
-      queryClient.invalidateQueries({ queryKey: ['chatHistory'] });
+    {
+      icon: <RefreshCw className="h-6 w-6 text-cyan-600" />,
+      title: 'Word-by-word Streaming',
+      desc: 'Simulates a premium chat typing effect with smooth word flow and instant typing indicators.'
     },
-    onError: (err: any) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: 'assistant',
-          text: `Error processing query: ${err?.response?.data?.detail || 'General retrieval error.'}`
-        }
-      ]);
+    {
+      icon: <Database className="h-6 w-6 text-emerald-600" />,
+      title: 'SQLite Storefront Linking',
+      desc: 'Connects directly with SQLite backend data to provide matching product cards routing straight to product pages.'
     }
-  });
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    const queryText = inputValue;
-    setMessages((prev) => [...prev, { sender: 'user', text: queryText }]);
-    setInputValue('');
-    queryMutation.mutate(queryText);
-  };
-
-  const handleProductCardClick = (link: string) => {
-    // Extract ID from link if standard, or search database.
-    // Standard link structure is "/product/ID" or direct URL.
-    // For convenience, redirect to products with search parameters.
-    navigate(`/products?q=${encodeURIComponent(link.split('/').pop() || '')}`);
-  };
+  ];
 
   return (
-    <div className="space-y-6 pb-12 max-w-4xl mx-auto h-[calc(100vh-12rem)] flex flex-col">
-      
-      {/* Title Header */}
-      <div className="flex-shrink-0">
-        <h1 className="text-2xl font-extrabold text-slate-800 flex items-center gap-2">
-          <MessageSquareCode className="h-7 w-7 text-blue-600 animate-pulse" />
-          RAG Shopping Assistant
-        </h1>
-        <p className="text-xs text-slate-400">Ask shopping recommendations, compare brands, or locate hardware details.</p>
+    <div className="py-12 max-w-5xl mx-auto space-y-16 px-4">
+      {/* Hero Section */}
+      <div className="text-center space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wider"
+        >
+          <Sparkles className="h-4 w-4 animate-spin-slow" />
+          Global AI Store Assistant
+        </motion.div>
+        
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-4xl sm:text-5xl font-extrabold text-slate-800 tracking-tight font-outfit"
+        >
+          Meet <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Aura AI Assistant</span>
+        </motion.h1>
+        
+        <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed"
+        >
+          We’ve upgraded your shopping experience. Aura is now a global Floating Assistant available on every page, loaded with voice support, real database querying, and brand comparison tools.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="pt-4"
+        >
+          <button
+            onClick={triggerOpen}
+            className="inline-flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all scale-100 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          >
+            <MessageSquareCode className="h-5.5 w-5.5 animate-pulse" />
+            Launch AI Assistant
+            <ArrowRight className="h-5 w-5" />
+          </button>
+        </motion.div>
       </div>
 
-      {/* Chat Space */}
-      <div className="flex-1 min-h-0 bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-        
-        {/* Messages Feed */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex gap-3 max-w-[85%] ${
-                msg.sender === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
-              }`}
-            >
-              {/* Profile icon */}
-              <div className={`h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0 border ${
-                msg.sender === 'user'
-                  ? 'bg-blue-50 border-blue-100 text-blue-600 font-bold text-xs'
-                  : 'bg-purple-50 border-purple-100 text-purple-600'
-              }`}>
-                {msg.sender === 'user' ? 'ME' : <Cpu className="h-4 w-4" />}
-              </div>
-
-              {/* Bubble */}
-              <div className="space-y-3">
-                <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                  msg.sender === 'user'
-                    ? 'bg-slate-900 text-white rounded-tr-none'
-                    : 'bg-slate-50 border border-slate-100 text-slate-700 rounded-tl-none'
-                }`}>
-                  <p>{msg.text}</p>
-
-                  {msg.source && (
-                    <span className="inline-block mt-2 text-[9px] font-bold text-slate-400 uppercase tracking-wide">
-                      LLM Model Source: {msg.source}
-                    </span>
-                  )}
-                </div>
-
-                {/* Match product cards */}
-                {msg.products && msg.products.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    {msg.products.slice(0, 2).map((prod, pIdx) => (
-                      <div
-                        key={pIdx}
-                        onClick={() => handleProductCardClick(prod.name)}
-                        className="p-3 bg-white border border-slate-150 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer flex gap-3 items-center"
-                      >
-                        <div className="h-10 w-10 bg-slate-50 rounded-lg flex items-center justify-center flex-shrink-0 border border-slate-100 overflow-hidden">
-                          <Cpu className="h-5 w-5 text-slate-350" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-slate-800 text-xs truncate">{prod.name}</p>
-                          <p className="text-[10px] font-extrabold text-blue-600 mt-0.5">{prod.discount_price || prod.actual_price}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Side by side Brand Comparisons */}
-                {msg.comparison && (
-                  <div className="p-5 border border-slate-150 rounded-2xl bg-white shadow-sm space-y-4 max-w-lg">
-                    <h4 className="font-bold text-slate-800 text-xs flex items-center gap-1">
-                      <Scale className="h-4 w-4 text-blue-600" />
-                      Attribute Comparison ({msg.comparison.brand_a} vs {msg.comparison.brand_b})
-                    </h4>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div className="p-3 bg-slate-50 rounded-xl space-y-1.5">
-                        <span className="font-bold text-slate-700 uppercase tracking-wide text-[9px]">
-                          {msg.comparison.brand_a} Specs
-                        </span>
-                        <p className="font-bold text-slate-800">Price: {msg.comparison.price.split(' vs ')[0]}</p>
-                        <p className="font-semibold text-slate-600">Rating: {msg.comparison.ratings.split(' vs ')[0]}</p>
-                        <div className="text-[10px] text-slate-500">
-                          <p className="font-bold text-emerald-600">Pros:</p>
-                          <ul className="list-disc pl-3">
-                            {msg.comparison.pros[msg.comparison.brand_a]?.slice(0, 2).map((p, i) => <li key={i}>{p}</li>)}
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="p-3 bg-slate-50 rounded-xl space-y-1.5">
-                        <span className="font-bold text-slate-700 uppercase tracking-wide text-[9px]">
-                          {msg.comparison.brand_b} Specs
-                        </span>
-                        <p className="font-bold text-slate-800">Price: {msg.comparison.price.split(' vs ')[1] || 'N/A'}</p>
-                        <p className="font-semibold text-slate-600">Rating: {msg.comparison.ratings.split(' vs ')[1] || 'N/A'}</p>
-                        <div className="text-[10px] text-slate-500">
-                          <p className="font-bold text-emerald-600">Pros:</p>
-                          <ul className="list-disc pl-3">
-                            {msg.comparison.pros[msg.comparison.brand_b]?.slice(0, 2).map((p, i) => <li key={i}>{p}</li>)}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+      {/* Feature Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+        {features.map((feat, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: idx * 0.1 }}
+            className="p-6 bg-white border border-slate-100 rounded-3xl shadow-sm hover:shadow-md transition-shadow flex gap-4"
+          >
+            <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100/50">
+              {feat.icon}
             </div>
-          ))}
-
-          {queryMutation.isPending && (
-            <div className="flex gap-3 mr-auto items-center">
-              <div className="h-8 w-8 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center">
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              </div>
-              <div className="p-3 bg-slate-50 border border-slate-100 text-slate-500 rounded-2xl rounded-tl-none text-xs font-semibold">
-                Running RAG pipeline query...
-              </div>
+            <div className="space-y-2">
+              <h3 className="font-bold text-slate-800 text-base font-outfit">{feat.title}</h3>
+              <p className="text-sm text-slate-400 leading-relaxed">{feat.desc}</p>
             </div>
-          )}
-          
-          <div ref={bottomRef} />
-        </div>
+          </motion.div>
+        ))}
+      </div>
 
-        {/* Input Bar */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex-shrink-0">
-          <form onSubmit={handleSend} className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Ask RAG shopping queries..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              disabled={queryMutation.isPending}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={queryMutation.isPending || !inputValue.trim()}
-              className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center cursor-pointer"
-            >
-              <Send className="h-4.5 w-4.5" />
-            </button>
-          </form>
+      {/* Suggestion / Tips Guide */}
+      <div className="p-8 bg-gradient-to-tr from-slate-50 to-blue-50/20 border border-slate-100 rounded-3xl space-y-4">
+        <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2 font-outfit">
+          <HelpCircle className="h-5 w-5 text-blue-600" />
+          What can you ask Aura?
+        </h3>
+        <p className="text-sm text-slate-500 leading-relaxed">
+          Aura is fully aware of all active product collections, specifications, prices, and consumer reviews. Try typing the following directly into the assistant at the bottom right corner of your screen:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2">
+          <div className="p-3.5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between">
+            <span className="text-slate-600 font-medium italic">"Recommend a laptop under 80000"</span>
+            <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Laptops</span>
+          </div>
+          <div className="p-3.5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between">
+            <span className="text-slate-600 font-medium italic">"Best smartphone under 25000"</span>
+            <span className="text-[10px] text-purple-600 font-bold uppercase tracking-wider">Phones</span>
+          </div>
+          <div className="p-3.5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between">
+            <span className="text-slate-600 font-medium italic">"Compare Samsung vs OnePlus"</span>
+            <span className="text-[10px] text-cyan-600 font-bold uppercase tracking-wider">Comparison</span>
+          </div>
+          <div className="p-3.5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between">
+            <span className="text-slate-600 font-medium italic">"Show trending products"</span>
+            <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Trends</span>
+          </div>
         </div>
-
       </div>
     </div>
   );
