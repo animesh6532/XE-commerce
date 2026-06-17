@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assests/xe-commerce-banner.gif" alt="XE-Commerce Banner" width="100%" height="260">
+  <img src="assests/xe-commerce-banner.gif" alt="XE-Commerce Banner" width="100%" height="320">
 </p>
 
 <p align="center">
