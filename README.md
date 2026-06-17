@@ -1,5 +1,19 @@
-# Aura-Commerce-AI (Xecomerce)
+<p align="center">
+  <img src="assests/xe-commerce-banner.gif" alt="XE-Commerce Banner" width="100%" height="260">
+</p>
 
+<p align="center">
+AI-Powered Intelligent E-Commerce Platform built with FastAPI, React, TypeScript, MySQL and Machine Learning.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/FastAPI-Backend-green">
+  <img src="https://img.shields.io/badge/React-Frontend-blue">
+  <img src="https://img.shields.io/badge/TypeScript-Strict-blue">
+  <img src="https://img.shields.io/badge/MySQL-Database-orange">
+  <img src="https://img.shields.io/badge/MachineLearning-AI-red">
+  <img src="https://img.shields.io/badge/License-MIT-success">
+</p>
 **AI-Powered Intelligent Commerce Platform**
 
 Aura-Commerce-AI is an enterprise-grade, AI-first e-commerce platform designed to showcase full-stack retail engineering integrated with machine learning models. It combines a React + TypeScript storefront, a FastAPI backend microservice, a fully normalized MySQL 8+ database, and five custom machine learning pipelines for predictive pricing, demand forecasting, customer sentiment analysis, review moderation, and personalized recommendations.
